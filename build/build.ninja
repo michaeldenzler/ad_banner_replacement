@@ -1,0 +1,142 @@
+## This file contains all the build statements describing the
+# compilation DAG.
+
+# =============================================================================
+# Write statements declared in CMakeLists.txt:
+# 
+# Which is the root file.
+# =============================================================================
+
+# =============================================================================
+# Project: ad-banner-replacement
+# Configurations: Debug
+# =============================================================================
+
+#############################################
+# Minimal version of Ninja required by this file
+
+ninja_required_version = 1.5
+
+
+#############################################
+# Set configuration variable for custom commands.
+
+CONFIGURATION = Debug
+# =============================================================================
+# Include auxiliary files.
+
+
+#############################################
+# Include rules file.
+
+include CMakeFiles/rules.ninja
+
+# =============================================================================
+
+#############################################
+# Logical path to working directory; prefix for absolute paths.
+
+cmake_ninja_workdir = /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build/
+# =============================================================================
+# Object build statements for EXECUTABLE target ad-banner-replacement
+
+
+#############################################
+# Order-only phony target for ad-banner-replacement
+
+build cmake_object_order_depends_target_ad-banner-replacement: phony || CMakeFiles/ad-banner-replacement.dir
+
+build CMakeFiles/ad-banner-replacement.dir/ad_banner_replacement.cpp.o: CXX_COMPILER__ad-banner-replacement_Debug /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/ad_banner_replacement.cpp || cmake_object_order_depends_target_ad-banner-replacement
+  DEP_FILE = CMakeFiles/ad-banner-replacement.dir/ad_banner_replacement.cpp.o.d
+  FLAGS = -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14
+  INCLUDES = -isystem /usr/local/Cellar/opencv/4.5.5_2/include/opencv4
+  OBJECT_DIR = CMakeFiles/ad-banner-replacement.dir
+  OBJECT_FILE_DIR = CMakeFiles/ad-banner-replacement.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ad-banner-replacement
+
+
+#############################################
+# Link the executable ad-banner-replacement
+
+build ad-banner-replacement: CXX_EXECUTABLE_LINKER__ad-banner-replacement_Debug CMakeFiles/ad-banner-replacement.dir/ad_banner_replacement.cpp.o | /usr/local/lib/libopencv_gapi.4.5.5.dylib /usr/local/lib/libopencv_stitching.4.5.5.dylib /usr/local/lib/libopencv_alphamat.4.5.5.dylib /usr/local/lib/libopencv_aruco.4.5.5.dylib /usr/local/lib/libopencv_barcode.4.5.5.dylib /usr/local/lib/libopencv_bgsegm.4.5.5.dylib /usr/local/lib/libopencv_bioinspired.4.5.5.dylib /usr/local/lib/libopencv_ccalib.4.5.5.dylib /usr/local/lib/libopencv_dnn_objdetect.4.5.5.dylib /usr/local/lib/libopencv_dnn_superres.4.5.5.dylib /usr/local/lib/libopencv_dpm.4.5.5.dylib /usr/local/lib/libopencv_face.4.5.5.dylib /usr/local/lib/libopencv_freetype.4.5.5.dylib /usr/local/lib/libopencv_fuzzy.4.5.5.dylib /usr/local/lib/libopencv_hfs.4.5.5.dylib /usr/local/lib/libopencv_img_hash.4.5.5.dylib /usr/local/lib/libopencv_intensity_transform.4.5.5.dylib /usr/local/lib/libopencv_line_descriptor.4.5.5.dylib /usr/local/lib/libopencv_mcc.4.5.5.dylib /usr/local/lib/libopencv_quality.4.5.5.dylib /usr/local/lib/libopencv_rapid.4.5.5.dylib /usr/local/lib/libopencv_reg.4.5.5.dylib /usr/local/lib/libopencv_rgbd.4.5.5.dylib /usr/local/lib/libopencv_saliency.4.5.5.dylib /usr/local/lib/libopencv_sfm.4.5.5.dylib /usr/local/lib/libopencv_stereo.4.5.5.dylib /usr/local/lib/libopencv_structured_light.4.5.5.dylib /usr/local/lib/libopencv_superres.4.5.5.dylib /usr/local/lib/libopencv_surface_matching.4.5.5.dylib /usr/local/lib/libopencv_tracking.4.5.5.dylib /usr/local/lib/libopencv_videostab.4.5.5.dylib /usr/local/lib/libopencv_viz.4.5.5.dylib /usr/local/lib/libopencv_wechat_qrcode.4.5.5.dylib /usr/local/lib/libopencv_xfeatures2d.4.5.5.dylib /usr/local/lib/libopencv_xobjdetect.4.5.5.dylib /usr/local/lib/libopencv_xphoto.4.5.5.dylib /usr/local/lib/libopencv_shape.4.5.5.dylib /usr/local/lib/libopencv_highgui.4.5.5.dylib /usr/local/lib/libopencv_datasets.4.5.5.dylib /usr/local/lib/libopencv_plot.4.5.5.dylib /usr/local/lib/libopencv_text.4.5.5.dylib /usr/local/lib/libopencv_ml.4.5.5.dylib /usr/local/lib/libopencv_phase_unwrapping.4.5.5.dylib /usr/local/lib/libopencv_optflow.4.5.5.dylib /usr/local/lib/libopencv_ximgproc.4.5.5.dylib /usr/local/lib/libopencv_video.4.5.5.dylib /usr/local/lib/libopencv_videoio.4.5.5.dylib /usr/local/lib/libopencv_imgcodecs.4.5.5.dylib /usr/local/lib/libopencv_objdetect.4.5.5.dylib /usr/local/lib/libopencv_calib3d.4.5.5.dylib /usr/local/lib/libopencv_dnn.4.5.5.dylib /usr/local/lib/libopencv_features2d.4.5.5.dylib /usr/local/lib/libopencv_flann.4.5.5.dylib /usr/local/lib/libopencv_photo.4.5.5.dylib /usr/local/lib/libopencv_imgproc.4.5.5.dylib /usr/local/lib/libopencv_core.4.5.5.dylib
+  FLAGS = -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
+  LINK_LIBRARIES = -Wl,-rpath,/usr/local/lib  /usr/local/lib/libopencv_gapi.4.5.5.dylib  /usr/local/lib/libopencv_stitching.4.5.5.dylib  /usr/local/lib/libopencv_alphamat.4.5.5.dylib  /usr/local/lib/libopencv_aruco.4.5.5.dylib  /usr/local/lib/libopencv_barcode.4.5.5.dylib  /usr/local/lib/libopencv_bgsegm.4.5.5.dylib  /usr/local/lib/libopencv_bioinspired.4.5.5.dylib  /usr/local/lib/libopencv_ccalib.4.5.5.dylib  /usr/local/lib/libopencv_dnn_objdetect.4.5.5.dylib  /usr/local/lib/libopencv_dnn_superres.4.5.5.dylib  /usr/local/lib/libopencv_dpm.4.5.5.dylib  /usr/local/lib/libopencv_face.4.5.5.dylib  /usr/local/lib/libopencv_freetype.4.5.5.dylib  /usr/local/lib/libopencv_fuzzy.4.5.5.dylib  /usr/local/lib/libopencv_hfs.4.5.5.dylib  /usr/local/lib/libopencv_img_hash.4.5.5.dylib  /usr/local/lib/libopencv_intensity_transform.4.5.5.dylib  /usr/local/lib/libopencv_line_descriptor.4.5.5.dylib  /usr/local/lib/libopencv_mcc.4.5.5.dylib  /usr/local/lib/libopencv_quality.4.5.5.dylib  /usr/local/lib/libopencv_rapid.4.5.5.dylib  /usr/local/lib/libopencv_reg.4.5.5.dylib  /usr/local/lib/libopencv_rgbd.4.5.5.dylib  /usr/local/lib/libopencv_saliency.4.5.5.dylib  /usr/local/lib/libopencv_sfm.4.5.5.dylib  /usr/local/lib/libopencv_stereo.4.5.5.dylib  /usr/local/lib/libopencv_structured_light.4.5.5.dylib  /usr/local/lib/libopencv_superres.4.5.5.dylib  /usr/local/lib/libopencv_surface_matching.4.5.5.dylib  /usr/local/lib/libopencv_tracking.4.5.5.dylib  /usr/local/lib/libopencv_videostab.4.5.5.dylib  /usr/local/lib/libopencv_viz.4.5.5.dylib  /usr/local/lib/libopencv_wechat_qrcode.4.5.5.dylib  /usr/local/lib/libopencv_xfeatures2d.4.5.5.dylib  /usr/local/lib/libopencv_xobjdetect.4.5.5.dylib  /usr/local/lib/libopencv_xphoto.4.5.5.dylib  /usr/local/lib/libopencv_shape.4.5.5.dylib  /usr/local/lib/libopencv_highgui.4.5.5.dylib  /usr/local/lib/libopencv_datasets.4.5.5.dylib  /usr/local/lib/libopencv_plot.4.5.5.dylib  /usr/local/lib/libopencv_text.4.5.5.dylib  /usr/local/lib/libopencv_ml.4.5.5.dylib  /usr/local/lib/libopencv_phase_unwrapping.4.5.5.dylib  /usr/local/lib/libopencv_optflow.4.5.5.dylib  /usr/local/lib/libopencv_ximgproc.4.5.5.dylib  /usr/local/lib/libopencv_video.4.5.5.dylib  /usr/local/lib/libopencv_videoio.4.5.5.dylib  /usr/local/lib/libopencv_imgcodecs.4.5.5.dylib  /usr/local/lib/libopencv_objdetect.4.5.5.dylib  /usr/local/lib/libopencv_calib3d.4.5.5.dylib  /usr/local/lib/libopencv_dnn.4.5.5.dylib  /usr/local/lib/libopencv_features2d.4.5.5.dylib  /usr/local/lib/libopencv_flann.4.5.5.dylib  /usr/local/lib/libopencv_photo.4.5.5.dylib  /usr/local/lib/libopencv_imgproc.4.5.5.dylib  /usr/local/lib/libopencv_core.4.5.5.dylib
+  OBJECT_DIR = CMakeFiles/ad-banner-replacement.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ad-banner-replacement
+  TARGET_PDB = ad-banner-replacement.dbg
+
+
+#############################################
+# Utility command for edit_cache
+
+build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
+  COMMAND = cd /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build && /usr/local/Cellar/cmake/3.23.2/bin/ccmake -S/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement -B/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build
+  DESC = Running CMake cache editor...
+  pool = console
+  restat = 1
+
+build edit_cache: phony CMakeFiles/edit_cache.util
+
+
+#############################################
+# Utility command for rebuild_cache
+
+build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
+  COMMAND = cd /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build && /usr/local/Cellar/cmake/3.23.2/bin/cmake --regenerate-during-build -S/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement -B/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build
+  DESC = Running CMake to regenerate build system...
+  pool = console
+  restat = 1
+
+build rebuild_cache: phony CMakeFiles/rebuild_cache.util
+
+# =============================================================================
+# Target aliases.
+
+# =============================================================================
+# Folder targets.
+
+# =============================================================================
+
+#############################################
+# Folder: /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build
+
+build all: phony ad-banner-replacement
+
+# =============================================================================
+# Built-in targets
+
+
+#############################################
+# Re-run CMake if any of its inputs changed.
+
+build build.ninja: RERUN_CMAKE | ../CMakeLists.txt /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCXXInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeGenericSystem.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/AppleClang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/AppleClang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/Clang.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/GNU.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/FindPackageHandleStandardArgs.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/FindPackageMessage.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-AppleClang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-AppleClang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Darwin-Initialize.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Darwin.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/UnixPaths.cmake /usr/local/lib/cmake/opencv4/OpenCVConfig-version.cmake /usr/local/lib/cmake/opencv4/OpenCVConfig.cmake /usr/local/lib/cmake/opencv4/OpenCVModules-release.cmake /usr/local/lib/cmake/opencv4/OpenCVModules.cmake CMakeCache.txt CMakeFiles/3.23.2/CMakeCCompiler.cmake CMakeFiles/3.23.2/CMakeCXXCompiler.cmake CMakeFiles/3.23.2/CMakeSystem.cmake
+  pool = console
+
+
+#############################################
+# A missing CMake input file is not an error.
+
+build ../CMakeLists.txt /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCXXInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeGenericSystem.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/AppleClang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/AppleClang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/Clang.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Compiler/GNU.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/FindPackageHandleStandardArgs.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/FindPackageMessage.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-AppleClang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-AppleClang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang-C.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang-CXX.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Apple-Clang.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Darwin-Initialize.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/Darwin.cmake /usr/local/Cellar/cmake/3.23.2/share/cmake/Modules/Platform/UnixPaths.cmake /usr/local/lib/cmake/opencv4/OpenCVConfig-version.cmake /usr/local/lib/cmake/opencv4/OpenCVConfig.cmake /usr/local/lib/cmake/opencv4/OpenCVModules-release.cmake /usr/local/lib/cmake/opencv4/OpenCVModules.cmake CMakeCache.txt CMakeFiles/3.23.2/CMakeCCompiler.cmake CMakeFiles/3.23.2/CMakeCXXCompiler.cmake CMakeFiles/3.23.2/CMakeSystem.cmake: phony
+
+
+#############################################
+# Clean all the built files.
+
+build clean: CLEAN
+
+
+#############################################
+# Print all primary targets available.
+
+build help: HELP
+
+
+#############################################
+# Make the all target the default.
+
+default all

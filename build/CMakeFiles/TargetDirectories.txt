@@ -1,0 +1,3 @@
+/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build/CMakeFiles/ad-banner-replacement.dir
+/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build/CMakeFiles/edit_cache.dir
+/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build/CMakeFiles/rebuild_cache.dir

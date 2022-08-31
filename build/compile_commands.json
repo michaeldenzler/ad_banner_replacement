@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/build",
+  "command": "/usr/bin/clang++ -isystem /usr/local/Cellar/opencv/4.5.5_2/include/opencv4 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14 -o CMakeFiles/ad-banner-replacement.dir/ad_banner_replacement.cpp.o -c /Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/ad_banner_replacement.cpp",
+  "file": "/Users/michaeldenzler/Documents/MyCppCode/AdBannerReplacement/ad_banner_replacement.cpp"
+}
+]

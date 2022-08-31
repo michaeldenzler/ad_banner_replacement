@@ -1,0 +1,5 @@
+# ninja log v5
+2209	2285	1661950339545260140	my-cpp-code	4fe49ad3cc1b7b3a
+1	2207	1661950339458659353	CMakeFiles/my-cpp-code.dir/ad_banner_replacement.cpp.o	4f69fc63855bfe1a
+3	2272	1661950401165566231	CMakeFiles/ad-banner-replacement.dir/ad_banner_replacement.cpp.o	227cd5f014a14d0f
+2273	2365	1661950401269581121	ad-banner-replacement	e5ecb900aabfa037
