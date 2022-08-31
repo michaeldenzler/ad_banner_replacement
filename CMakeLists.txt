@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD 14)
 # needed to include and link the OpenCV program into this
 # demo project, namely OpenCV_INCLUDE_DIRS and OpenCV_LIBS
 find_package( OpenCV REQUIRED )
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 # tell the build to include the headers from OpenCV
 include_directories( ${OpenCV_INCLUDE_DIRS} )
@@ -28,3 +29,4 @@ add_executable(ad-banner-replacement ad_banner_replacement.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(ad-banner-replacement ${OpenCV_LIBS} )
+target_link_libraries (ad-banner-replacement Eigen3::Eigen)

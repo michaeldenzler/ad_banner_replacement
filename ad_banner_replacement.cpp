@@ -8,6 +8,7 @@
 #include <string>
 #include <queue>
 #include <set>
+#include <Eigen/Dense>
 
 #define PI 3.14159265
 
@@ -361,6 +362,52 @@ std::vector<Vec4i> longestX(std::vector<Vec4i> lines, int X=2, double angleTol=5
     return longestXLines;
 }
 
+bool CustomVectorCompare(const Vec4i &first, const Vec4i &second)
+{      
+    return first[1] < second[1];
+}
+
+std::vector<Point> extendLines(std::vector<Vec4i> lines, Mat img)
+{   
+    // sort lines in increasing y-coordinate to ensure top left & right corners are added first;
+    std::sort(lines.begin(), lines.end(), CustomVectorCompare);
+
+    int width = img.cols;
+    int height = img.rows;
+
+    Eigen::Vector3d top_left(0, 0, 1);
+    Eigen::Vector3d top_right(width-1, 0, 1);
+    Eigen::Vector3d bottom_left(0, height-1, 1);
+    Eigen::Vector3d bottom_right(width-1, height-1, 1);
+
+    Eigen::Vector3d left_border = top_left.cross(bottom_left);
+    Eigen::Vector3d left_border2 = bottom_left.cross(top_left);
+    Eigen::Vector3d right_border = top_right.cross(bottom_right);
+
+    std::vector<Point> pts;
+    for (Vec4i line : lines){
+        int x1 = line[0];
+        int y1 = line[1];
+        int x2 = line[2];
+        int y2 = line[3];
+
+        Eigen::Vector3d v1(x1, y1, 1);
+        Eigen::Vector3d v2(x2, y2, 1);
+
+        Eigen::Vector3d l = v1.cross(v2);
+
+        Eigen::Vector3d p1 = l.cross(left_border);
+        p1 = p1 / p1[2];
+        Eigen::Vector3d p2 = l.cross(right_border);
+        p2 = p2 / p2[2];
+
+        pts.push_back(Point(p1[0], p1[1]));
+        pts.push_back(Point(p2[0], p2[1]));
+    }
+
+    return pts;
+}
+
 void onMouse(int evt, int x, int y, int flag, void *ptr)
 {
     if (evt == EVENT_LBUTTONDOWN)
@@ -448,8 +495,6 @@ int main(int argc, char *argv[])
     lines = houghLines(imgCanny);
     longestLines = longestX(lines);
 
-    cout << "here" << endl;
-
     Mat imgBGR;
     cvtColor(imgCanny, imgBGR, COLOR_GRAY2BGR);
     line(imgBGR, Point(longestLines[0][0], longestLines[0][1]), 
@@ -462,37 +507,37 @@ int main(int argc, char *argv[])
     imshow("imgLines", imgBGR);
     waitKey(0);
 
-    cout << "here2" << endl;
+    std::vector<Point> pts = extendLines(longestLines, imgCanny);
 
-    // create window
-    namedWindow("My Window", 1);
+    // // create window
+    // namedWindow("My Window", 1);
 
-    // set the callback function for any mouse event
-    std::vector<Point> pts;
-    setMouseCallback("My Window", onMouse, &pts);
+    // // set the callback function for any mouse event
+    // std::vector<Point> pts;
+    // setMouseCallback("My Window", onMouse, &pts);
 
-    // prepare instructions on image
-    putText(
-        img,
-        "Pick the 4 corners of the banner clock-wise starting from the top left",
-        Point(50, 50),
-        FONT_HERSHEY_DUPLEX,
-        1,
-        Scalar(0, 255, 0),
-        2,
-        false);
-    // show the image
-    imshow("My Window", img);
-    // Wait until user press some key
-    waitKey(0);
+    // // prepare instructions on image
+    // putText(
+    //     img,
+    //     "Pick the 4 corners of the banner clock-wise starting from the top left",
+    //     Point(50, 50),
+    //     FONT_HERSHEY_DUPLEX,
+    //     1,
+    //     Scalar(0, 255, 0),
+    //     2,
+    //     false);
+    // // show the image
+    // imshow("My Window", img);
+    // // Wait until user press some key
+    // waitKey(0);
 
-    cout << "Selected 1st point with x-coord=" << pts[0].x << " and y-coord=" << pts[0].y << endl;
-    cout << "Selected 2nd point with x-coord=" << pts[1].x << " and y-coord=" << pts[1].y << endl;
-    cout << "Selected 3rd point with x-coord=" << pts[2].x << " and y-coord=" << pts[2].y << endl;
-    cout << "Selected 4th point with x-coord=" << pts[3].x << " and y-coord=" << pts[3].y << endl;
+    cout << "Selected top left point with x-coord=" << pts[0].x << " and y-coord=" << pts[0].y << endl;
+    cout << "Selected top right point with x-coord=" << pts[1].x << " and y-coord=" << pts[1].y << endl;
+    cout << "Selected bottom left point with x-coord=" << pts[2].x << " and y-coord=" << pts[2].y << endl;
+    cout << "Selected bottom right point with x-coord=" << pts[3].x << " and y-coord=" << pts[3].y << endl;
 
-    int bannerHeight = ((pts[3].y - pts[0].y) + (pts[2].y - pts[1].y)) / 2;
-    int bannerWidth = ((pts[1].x - pts[0].x) + (pts[2].x - pts[3].x)) / 2;
+    int bannerHeight = ((pts[2].y - pts[0].y) + (pts[3].y - pts[1].y)) / 2;
+    int bannerWidth = ((pts[1].x - pts[0].x) + (pts[3].x - pts[2].x)) / 2;
 
     // cout << "height=" << bannerHeight << " width=" << bannerWidth << endl;
 
