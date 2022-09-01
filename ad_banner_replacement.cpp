@@ -10,8 +10,6 @@
 #include <set>
 #include <Eigen/Dense>
 
-#define PI 3.14159265
-
 using namespace cv;
 using std::cout;
 using std::endl;
@@ -52,10 +50,6 @@ Mat pitchMask(Mat img)
     Scalar lowerBound = Scalar(36, 50, 70), upperBound = Scalar(85, 255, 255);
     inRange(imgHSV, lowerBound, upperBound, mask);
 
-    // namedWindow("greenMask", WINDOW_AUTOSIZE);
-    // imshow("greenMask", mask);
-    // waitKey(0);
-
     int morph_size = 3;
     Mat kernel = getStructuringElement( MORPH_RECT,
                        Size( 2*morph_size + 1, 2*morph_size+1 ),
@@ -64,10 +58,6 @@ Mat pitchMask(Mat img)
     morphologyEx(mask, mask, MORPH_OPEN, kernel, Point(-1,1), 2);
 
     mask = biggestAreaMask(mask);
-
-    // namedWindow("greenMorphMask", WINDOW_AUTOSIZE);
-    // imshow("greenMorphMask", mask);
-    // waitKey(0);
 
     return mask;
 }
@@ -96,22 +86,18 @@ std::vector<Point> findCorners(std::vector<Point> points)
         }
     }
 
-    // cout << topLeft << " " << topRight << " " << bottomLeft << " " << bottomRight << endl;
-
     std::vector<Point> corners {topLeft, topRight, bottomRight, bottomLeft};
     return corners;
 }
 
 Mat outLimitBannerMask(Mat innerLimitMask)
 {   
-    // cout << innerLimitMask << endl;
     Mat outerLimitMask = Mat::zeros(innerLimitMask.rows, innerLimitMask.cols, CV_64FC1);
 
-    cout << "height: " << innerLimitMask.rows << " width: " << innerLimitMask.cols << endl;
     int heightTolerance = (int)innerLimitMask.rows * 0.025;
     int height = (int)innerLimitMask.rows * 0.09;
     int widthTolerance = (int)innerLimitMask.cols * 0.005;
-    int width = (int)innerLimitMask.cols * 0.02;
+    int width = (int)innerLimitMask.cols * 0.04;
 
     for (int row = 0; row < innerLimitMask.rows; row++){
         for (int col = 0; col < innerLimitMask.cols; col++){
@@ -138,11 +124,9 @@ Mat bannerMask(Mat pitchMask)
     Mat pitchMaskPadded;
     int padding = 10;
     copyMakeBorder(pitchMask, pitchMaskPadded, padding, padding, padding, padding, BORDER_CONSTANT);
-    // bitwise_not(pitchMaskPadded, pitchMaskPadded);
 
     std::vector<Point> points;
     goodFeaturesToTrack(pitchMaskPadded, points, 100, 0.01, 20);
-    cout << points.size() << endl;
 
     std::vector<Point> corners = findCorners(points);
 
@@ -154,28 +138,14 @@ Mat bannerMask(Mat pitchMask)
         circle(maskBGRPadded, corners[r], 5, Scalar(0,0,255), -1);
     }
 
-    namedWindow("corners", WINDOW_AUTOSIZE);
-    imshow("corners", maskBGRPadded);
-    waitKey(0);
-
     Mat maskPadded = Mat::zeros(maskBGRPadded.rows, maskBGRPadded.cols, CV_64FC1);
     fillConvexPoly(maskPadded, corners, Scalar(1));
-    
-    namedWindow("maskPadded", WINDOW_AUTOSIZE);
-    imshow("maskPadded", maskPadded);
-    waitKey(0);
 
-    Mat maskUnpadded = cv::Mat(maskPadded, cv::Rect(padding, padding, maskPadded.cols - 2 * padding, maskPadded.rows - 2 * padding));
-    // namedWindow("maskUnpadded", WINDOW_AUTOSIZE);
-    // imshow("maskUnpadded", maskUnpadded);
-    // waitKey(0);
+    Mat maskUnpadded = cv::Mat(maskPadded, cv::Rect(padding, padding, maskPadded.cols - 2 * padding, 
+                            maskPadded.rows - 2 * padding));
     Mat mask = outLimitBannerMask(maskUnpadded);
     mask.convertTo(mask, CV_8U);
     mask = biggestAreaMask(mask);
-
-    namedWindow("outerLimitMask", WINDOW_AUTOSIZE);
-    imshow("outerLimitMask", mask * 255);
-    waitKey(0);
 
     return mask;
 }
@@ -189,70 +159,14 @@ Mat cannyEdgeDetection(
     Mat greenCh;
     extractChannel(img, greenCh, 1);
     Mat greenMask = greenCh > 250;
-    // namedWindow("greenMask", WINDOW_AUTOSIZE);
-    // imshow("greenMask", greenMask);
-    // waitKey(0);
 
-    Mat imgGray, imgBlur33, imgGaussianBlur33, imgGaussianBlur55, imgCanny33, imgCannyG33, imgCannyG55;
+    Mat imgGray, imgGaussianBlur33, imgCannyG33;
     cvtColor(img, imgGray, COLOR_BGR2GRAY);
-
-    // namedWindow("imgGray", WINDOW_AUTOSIZE);
-    // imshow("imgGray", imgGray);
-    // waitKey(0);
-
-    // Mat imgBW;
-    // imgBW = imgGray > 128;
-
-    // namedWindow("imgBW", WINDOW_AUTOSIZE);
-    // imshow("imgBW", imgBW);
-
-    // dilate(imgBW, imgBW, Mat(), Point(-1,1), 1, 1, 1);
-    // erode(imgBW, imgBW, Mat(), Point(-1,1), 1, 1, 1);
-
-    // namedWindow("imgBWopened", WINDOW_AUTOSIZE);
-    // imshow("imgBWopened", imgBW);
-    // waitKey(0);
-
-    GaussianBlur(imgGray, imgBlur33, Size(5,5), 1.5);
-    Canny(imgBlur33, imgCanny33, lowThreshold, highThreshold, kernelSize);
 
     GaussianBlur(imgGray, imgGaussianBlur33, Size(3,3), 1.5);
     Canny(imgGaussianBlur33, imgCannyG33, lowThreshold, highThreshold, kernelSize);
 
-    GaussianBlur(imgGray, imgGaussianBlur55, Size(3,3), 1.5);
-
-    Mat imgBW;
-    imgBW = imgGaussianBlur55 > 128;
-
-    // namedWindow("imgBW", WINDOW_AUTOSIZE);
-    // imshow("imgBW", imgBW);
-    // waitKey(0);
-
-    int morph_size = 7;
-    Mat kernel = getStructuringElement( MORPH_RECT,
-                       Size( 2*morph_size + 1, 2*morph_size+1 ),
-                       Point( morph_size, morph_size ) );
-
-    morphologyEx(imgBW, imgBW, MORPH_OPEN, kernel, Point(-1,1), 1);
-
-    // namedWindow("imgBWopened", WINDOW_AUTOSIZE);
-    // imshow("imgBWopened", imgBW);
-    // waitKey(0);
-
-    Canny(imgBW, imgCannyG55, lowThreshold, highThreshold, kernelSize);
-
-    // namedWindow("imgOriginal", WINDOW_AUTOSIZE);
-    // namedWindow("imgCanny33", WINDOW_AUTOSIZE);
-    // namedWindow("imgCannyG33", WINDOW_AUTOSIZE);
-    // namedWindow("imgCannyG55", WINDOW_AUTOSIZE);
-
-    // imshow("imgOriginal", img);
-    // imshow("imgCanny33", imgCanny33);
-    // imshow("imgCannyG33", imgCannyG33);
-    // imshow("imgCannyG55", imgCannyG55);
-    // waitKey(0);
-
-    return imgCannyG55;
+    return imgCannyG33;
 }
 
 std::vector<Vec4i> houghLines(Mat img)
@@ -262,8 +176,7 @@ std::vector<Vec4i> houghLines(Mat img)
 
     cvtColor(img, imgBGR, COLOR_GRAY2BGR);
 
-    HoughLinesP(img, houghLines, 1, CV_PI/180, 100, 0, 400);
-    cout << "examle line: " << houghLines[0] << endl;
+    HoughLinesP(img, houghLines, 1, CV_PI/720, 200, 0, 400);
 
     int longest1 = 0;
     int longest2 = 0;
@@ -282,21 +195,9 @@ std::vector<Vec4i> houghLines(Mat img)
             longest2 = len;
             idx2 = i;
         }
-        // line(imgBGR, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 0, 0), 3, LINE_AA);
+        line(imgBGR, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 0, 0), 3, LINE_AA);
     }
-    // cout << idx1 << " " << idx2 << endl;
-    line(imgBGR, Point(houghLines[idx1][0], houghLines[idx1][1]), 
-        Point(houghLines[idx1][2], houghLines[idx1][3]), 
-        Scalar(255, 0, 0), 3, LINE_AA);
-    line(imgBGR, Point(houghLines[idx2][0], houghLines[idx2][1]), 
-        Point(houghLines[idx2][2], houghLines[idx2][3]), 
-        Scalar(255, 0, 0), 3, LINE_AA);
-
-    namedWindow("imgCanny", WINDOW_AUTOSIZE);
-    // namedWindow("imgLines", WINDOW_AUTOSIZE);
-    imshow("imgCanny", img);
-    // imshow("imgLines", imgBGR);
-    waitKey(0);
+    
     return houghLines;
 }
 
@@ -310,18 +211,14 @@ bool compareWithRange(double val, std::set<double> compVals, double tolerance)
     return false;
 }
 
-std::vector<Vec4i> longestX(std::vector<Vec4i> lines, int X=2, double angleTol=5.0, double cTol=10)
+std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol=5.0, double cTol=10)
 {
     std::vector<std::tuple<double, Vec4i, double, double>> infoTuples;
     for (size_t i = 0; i < lines.size(); i++) {
         Vec4i l = lines[i];
         double len = sqrt(pow(l[2] - l[0], 2) + pow(l[3] - l[1], 2));
-        double angle = atan((l[3] - l[1]) / (double)(l[2] - l[0])) * 360 / PI;
+        double angle = atan((l[3] - l[1]) / (double)(l[2] - l[0])) * 360 / CV_PI;
         double c = (l[1]*l[2] - l[0]*l[3]) / double(l[2] - l[0] + 0.000001);  // from line equation y = mx + c
-        // if (true){
-        //     cout << "line coordinates: " << l[0] << " " << l[1] << " " << l[2] << " " << l[3] << endl;
-        //     cout << "len: " << len << " angle: " << angle << " c: " << c << endl;
-        // }
         infoTuples.push_back(std::tuple<double, Vec4i, double, double>(len, l, angle, c));
     }
 
@@ -329,11 +226,10 @@ std::vector<Vec4i> longestX(std::vector<Vec4i> lines, int X=2, double angleTol=5
         std::vector<std::tuple<double, Vec4i, double, double>>, Comparator> infoQueue;
 
     for(const auto& elem : infoTuples){
-        cout << std::get<0>(elem) << " " << std::get<1>(elem) << " " << std::get<2>(elem) << " " << std::get<3>(elem) << "\n";
         infoQueue.push(elem);
     }
 
-    std::vector<Vec4i> longestXLines = {std::get<1>(infoQueue.top())};
+    std::vector<Vec4i> longestTwoLines = {std::get<1>(infoQueue.top())};
     std::set<double> seenAngles, seenCs;
     seenAngles.insert(std::get<2>(infoQueue.top()));
     seenCs.insert(std::get<3>(infoQueue.top()));
@@ -341,7 +237,6 @@ std::vector<Vec4i> longestX(std::vector<Vec4i> lines, int X=2, double angleTol=5
 
     int count = 1;
     while (count < X && !infoQueue.empty()) {
-        // cout << std::get<0>(triplets.top()) << "\n";
         std::tuple<double, Vec4i, double, double> candidate = infoQueue.top();
         Vec4i candidateLine = std::get<1>(candidate);
         double candidateAngle = std::get<2>(candidate);
@@ -351,15 +246,15 @@ std::vector<Vec4i> longestX(std::vector<Vec4i> lines, int X=2, double angleTol=5
         bool checkC = compareWithRange(candidateC, seenCs, cTol);
 
         if (!checkAngle || !checkC){
-            longestXLines.push_back(candidateLine);
+            longestTwoLines.push_back(candidateLine);
             count++;
         }
         infoQueue.pop();
     }
 
-    cout << "Longest 2 lines: " << longestXLines[0] << " " << longestXLines[1] << "\n";
+    cout << "Longest 2 lines: " << longestTwoLines[0] << " " << longestTwoLines[1] << "\n";
 
-    return longestXLines;
+    return longestTwoLines;
 }
 
 bool CustomVectorCompare(const Vec4i &first, const Vec4i &second)
@@ -408,14 +303,14 @@ std::vector<Point> extendLines(std::vector<Vec4i> lines, Mat img)
     return pts;
 }
 
-void onMouse(int evt, int x, int y, int flag, void *ptr)
+std::vector<Point> uncrop(std::vector<Point> pts, int xMin, int yMin)
 {
-    if (evt == EVENT_LBUTTONDOWN)
-    {
-        // vector<Point> *ptsPtr
-        std::vector<Point> *ptsPtr = (std::vector<Point> *)ptr;
-        ptsPtr->push_back(Point(x, y));
+    std::vector<Point> uncroppedPts;
+    for (Point pt : pts){
+        Point uncroppedPt = pt + Point(xMin, yMin);
+        uncroppedPts.push_back(uncroppedPt);
     }
+    return uncroppedPts;
 }
 
 std::vector<int> maskCorners(Mat mask){
@@ -425,7 +320,6 @@ std::vector<int> maskCorners(Mat mask){
     int yMax = 0;
     for (int row = 0; row < mask.rows; row ++){
         for (int col = 0; col < mask.cols; col++) {
-            // cout << mask.at<char>(row, col) << endl;
             if (mask.at<char>(row, col) != 0) {
                 if (col < xMin){
                     xMin = col;
@@ -457,6 +351,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    namedWindow("Original Img", WINDOW_AUTOSIZE);
+    imshow("Original Img", img);
+    waitKey(0);
+
     Mat pMask = pitchMask(img);
     Mat bMask = bannerMask(pMask);
 
@@ -469,13 +367,9 @@ int main(int argc, char *argv[])
         cout << "Error loading the template" << endl;
         return -1;
     }
-
     Mat maskedImg;
 
-    // Option 1: Mask whitch keeping image shape:
-    // img.copyTo(maskedImg, bMask);
-
-    // Option 2: Crop to mask
+    // Crop to mask
     std::vector<int> corners = maskCorners(bMask);
     int xMin = corners[0];
     int xMax = corners[1];
@@ -483,17 +377,13 @@ int main(int argc, char *argv[])
     int yMax = corners[3];
     Rect cropRegion(xMin, yMin, xMax - xMin, yMax - yMin);
     maskedImg = img(cropRegion);
-    
-    namedWindow("maskedImg", WINDOW_AUTOSIZE);
-    imshow("maskedImg", maskedImg);
-    waitKey(0);
 
     Mat imgCanny;
     std::vector<Vec4i> lines, longestLines;
 
     imgCanny = cannyEdgeDetection(maskedImg);
     lines = houghLines(imgCanny);
-    longestLines = longestX(lines);
+    longestLines = longestTwo(lines);
 
     Mat imgBGR;
     cvtColor(imgCanny, imgBGR, COLOR_GRAY2BGR);
@@ -503,49 +393,17 @@ int main(int argc, char *argv[])
     line(imgBGR, Point(longestLines[1][0], longestLines[1][1]), 
         Point(longestLines[1][2], longestLines[1][3]), 
         Scalar(255, 0, 0), 3, LINE_AA);
-    namedWindow("imgLines", WINDOW_AUTOSIZE);
-    imshow("imgLines", imgBGR);
-    waitKey(0);
 
     std::vector<Point> pts = extendLines(longestLines, imgCanny);
-
-    // // create window
-    // namedWindow("My Window", 1);
-
-    // // set the callback function for any mouse event
-    // std::vector<Point> pts;
-    // setMouseCallback("My Window", onMouse, &pts);
-
-    // // prepare instructions on image
-    // putText(
-    //     img,
-    //     "Pick the 4 corners of the banner clock-wise starting from the top left",
-    //     Point(50, 50),
-    //     FONT_HERSHEY_DUPLEX,
-    //     1,
-    //     Scalar(0, 255, 0),
-    //     2,
-    //     false);
-    // // show the image
-    // imshow("My Window", img);
-    // // Wait until user press some key
-    // waitKey(0);
-
-    cout << "Selected top left point with x-coord=" << pts[0].x << " and y-coord=" << pts[0].y << endl;
-    cout << "Selected top right point with x-coord=" << pts[1].x << " and y-coord=" << pts[1].y << endl;
-    cout << "Selected bottom left point with x-coord=" << pts[2].x << " and y-coord=" << pts[2].y << endl;
-    cout << "Selected bottom right point with x-coord=" << pts[3].x << " and y-coord=" << pts[3].y << endl;
+    pts = uncrop(pts, xMin, yMin);
 
     int bannerHeight = ((pts[2].y - pts[0].y) + (pts[3].y - pts[1].y)) / 2;
     int bannerWidth = ((pts[1].x - pts[0].x) + (pts[3].x - pts[2].x)) / 2;
 
-    // cout << "height=" << bannerHeight << " width=" << bannerWidth << endl;
+    cout << "banner height=" << bannerHeight << " banner width=" << bannerWidth << endl;
 
     double imgHeightToWidth = (double)bannerHeight / (double)bannerWidth;
-
     double templateHeightToWidth = double(templ.rows) / double(templ.cols);
-
-    // cout << "Img ratio=" << imgHeightToWidth << " and templ ratio=" << templateHeightToWidth << endl;
 
     Rect crop;
     crop.x = 0;
@@ -564,28 +422,12 @@ int main(int argc, char *argv[])
 
     Mat templCrop = templ(crop);
 
-    // imshow("template", templ);
-    // waitKey(0);
-
-    // imshow("cropped template", templCrop);
-    // waitKey(0);
-
-    // cout << "Img width=" << templCrop.cols << " and templ height=" << templCrop.rows << endl;
-
     std::vector<Point> templPts {
         Point(0, 0), 
         Point(templCrop.cols, 0), 
-        Point(templCrop.cols, templCrop.rows),
-        Point(0, templCrop.rows)};
+        Point(0, templCrop.rows),
+        Point(templCrop.cols, templCrop.rows)};
 
-    // cout << "img: " << pts << " templ: " << templPts << endl;
-
-    if (pts.size() != 4)
-    {
-        cout << "Chose " << pts.size() << " points instead of 4." << endl;
-        return -1;
-    }
-    cout << pts.size() << endl;
     std::vector<Point2f> pts2f;
     for (int i = 0; i < pts.size(); i++){
         pts2f.push_back((Point2d)pts[i]);
@@ -595,9 +437,6 @@ int main(int argc, char *argv[])
         templPts2f.push_back((Point2d)templPts[i]);
     }
 
-    // cout << "img2f: " << pts2f << " templ2f: " << templPts2f << endl;
-    // cout <<  "pts size: " <<  pts2f.size() << " templPts size: " << templPts2f.size() << endl;
-
     // replace banner advertisement with template
     Mat H = getPerspectiveTransform(templPts2f, pts2f);
     cv::Mat composite;
@@ -606,6 +445,13 @@ int main(int argc, char *argv[])
 
     imshow("warped template", composite);
     waitKey(0);
+
+    String outPath = argv[1];
+    int length = outPath.length();
+    outPath.erase(length - 5, 5);
+    outPath += "_result.jpeg";
+
+    imwrite(outPath, composite);
 
     return 0;
 }
