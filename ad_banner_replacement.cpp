@@ -19,12 +19,26 @@ struct ValueType{
     double angel;
 };
 
-struct Comparator {
-    bool operator()(std::tuple<double, Vec4i, double, double>& t1, 
-            std::tuple<double, Vec4i, double, double>& t2) {
-         return std::get<0>(t1) < std::get<0>(t2);
-     }
- };
+struct Comparator 
+{
+    bool operator()(std::tuple<double, Vec4i, double, double> t1, 
+            std::tuple<double, Vec4i, double, double> t2) {
+                return std::get<0>(t1) < std::get<0>(t2);
+                }
+};
+
+Mat getTemplate(String templatePath)
+{
+    // Read template from file
+    Mat templ = imread(templatePath);
+    templ = repeat(templ, 1, 10);
+    // if fail to read the template
+    if (templ.empty())
+    {
+        cout << "Error loading the template" << endl;
+    }
+    return templ;
+}
 
 Mat biggestAreaMask(Mat mask)
 {   
@@ -62,8 +76,11 @@ Mat pitchMask(Mat img)
     return mask;
 }
 
-std::vector<Point> findCorners(std::vector<Point> points)
+std::vector<Point> findCorners(Mat pMaskPadded)
 {
+    std::vector<Point> points;
+    goodFeaturesToTrack(pMaskPadded, points, 100, 0.01, 20);
+
     Point topLeft = points[0];
     Point topRight = points[0];
     Point bottomLeft = points[0];
@@ -119,35 +136,56 @@ Mat outLimitBannerMask(Mat innerLimitMask)
     return outerLimitMask;
 }
 
-Mat bannerMask(Mat pitchMask)
-{
-    Mat pitchMaskPadded;
+Mat bannerMask(Mat img)
+{   
+    // detect the pitch on the image.
+    Mat pMask = pitchMask(img);
+
+    // pad the pitch mask to also detect the image corners as potential corners of the pitch
+    Mat pMaskPadded;
     int padding = 10;
-    copyMakeBorder(pitchMask, pitchMaskPadded, padding, padding, padding, padding, BORDER_CONSTANT);
+    copyMakeBorder(pMask, pMaskPadded, padding, padding, padding, padding, BORDER_CONSTANT);
 
-    std::vector<Point> points;
-    goodFeaturesToTrack(pitchMaskPadded, points, 100, 0.01, 20);
+    // find the corners of the pitch
+    std::vector<Point> corners = findCorners(pMaskPadded);
 
-    std::vector<Point> corners = findCorners(points);
-
-    Mat maskBGRPadded;
-    cvtColor(pitchMaskPadded, maskBGRPadded, COLOR_GRAY2BGR);
-
-    for (size_t r = 0; r < corners.size(); r++)
-    {   
-        circle(maskBGRPadded, corners[r], 5, Scalar(0,0,255), -1);
-    }
-
-    Mat maskPadded = Mat::zeros(maskBGRPadded.rows, maskBGRPadded.cols, CV_64FC1);
+    // create a mask spanning the 4 pitch corners and unpad
+    Mat maskPadded = Mat::zeros(pMaskPadded.rows, pMaskPadded.cols, CV_64FC1);
     fillConvexPoly(maskPadded, corners, Scalar(1));
-
     Mat maskUnpadded = cv::Mat(maskPadded, cv::Rect(padding, padding, maskPadded.cols - 2 * padding, 
                             maskPadded.rows - 2 * padding));
+
+    // create a mask for the banners surrounding the pitch
     Mat mask = outLimitBannerMask(maskUnpadded);
     mask.convertTo(mask, CV_8U);
     mask = biggestAreaMask(mask);
 
     return mask;
+}
+
+void getMaskCorners(Mat mask, int &xMin, int &xMax, int &yMin, int &yMax){
+    xMin = mask.cols - 1;
+    xMax = 0;
+    yMin = mask.rows - 1;
+    yMax = 0;
+    for (int row = 0; row < mask.rows; row ++){
+        for (int col = 0; col < mask.cols; col++) {
+            if (mask.at<char>(row, col) != 0) {
+                if (col < xMin){
+                    xMin = col;
+                }
+                if (col > xMax){
+                    xMax = col;
+                }
+                if (row < yMin){
+                    yMin = row;
+                }
+                if (row > yMax){
+                    yMax = row;
+                }
+            }
+        }
+    }
 }
 
 Mat cannyEdgeDetection(
@@ -225,7 +263,7 @@ std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol
     std::priority_queue<std::tuple<double, Vec4i, double, double>, 
         std::vector<std::tuple<double, Vec4i, double, double>>, Comparator> infoQueue;
 
-    for(const auto& elem : infoTuples){
+    for(std::tuple<double, Vec4i, double, double> elem : infoTuples){
         infoQueue.push(elem);
     }
 
@@ -257,7 +295,7 @@ std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol
     return longestTwoLines;
 }
 
-bool CustomVectorCompare(const Vec4i &first, const Vec4i &second)
+bool CustomVectorCompare(Vec4i first, const Vec4i second)
 {      
     return first[1] < second[1];
 }
@@ -303,142 +341,82 @@ std::vector<Point> extendLines(std::vector<Vec4i> lines, Mat img)
     return pts;
 }
 
-std::vector<Point> uncrop(std::vector<Point> pts, int xMin, int yMin)
+void uncrop(std::vector<Point> &pts, int xMin, int yMin)
 {
     std::vector<Point> uncroppedPts;
     for (Point pt : pts){
         Point uncroppedPt = pt + Point(xMin, yMin);
         uncroppedPts.push_back(uncroppedPt);
     }
-    return uncroppedPts;
+    pts = uncroppedPts;
 }
 
-std::vector<int> maskCorners(Mat mask){
-    int xMin = mask.cols - 1;
-    int xMax = 0;
-    int yMin = mask.rows - 1;
-    int yMax = 0;
-    for (int row = 0; row < mask.rows; row ++){
-        for (int col = 0; col < mask.cols; col++) {
-            if (mask.at<char>(row, col) != 0) {
-                if (col < xMin){
-                    xMin = col;
-                }
-                if (col > xMax){
-                    xMax = col;
-                }
-                if (row < yMin){
-                    yMin = row;
-                }
-                if (row > yMax){
-                    yMax = row;
-                }
-            }
-        }
-    }
-    std::vector<int> corners {xMin, xMax, yMin, yMax};
-    return corners;
-}
-
-int main(int argc, char *argv[])
+void replaceAdBanner(Mat img, String imgPath, String templPath)
 {
-    // Read image from file
-    Mat img = imread(argv[1]);
-    // if fail to read the image
-    if (img.empty())
-    {
-        cout << "Error loading the image" << endl;
-        return -1;
-    }
-
     namedWindow("Original Img", WINDOW_AUTOSIZE);
     imshow("Original Img", img);
     waitKey(0);
 
-    Mat pMask = pitchMask(img);
-    Mat bMask = bannerMask(pMask);
+    Mat templ = getTemplate(templPath);
 
-    // Read template from file
-    Mat templ = imread(argv[2]);
-    templ = repeat(templ, 1, 10);
-    // if fail to read the template
-    if (templ.empty())
-    {
-        cout << "Error loading the template" << endl;
-        return -1;
-    }
-    Mat maskedImg;
+    Mat bMask = bannerMask(img);
 
-    // Crop to mask
-    std::vector<int> corners = maskCorners(bMask);
-    int xMin = corners[0];
-    int xMax = corners[1];
-    int yMin = corners[2];
-    int yMax = corners[3];
+    // Crop image to mask area
+    int xMin, xMax, yMin, yMax;
+    getMaskCorners(bMask, xMin, xMax, yMin, yMax);
     Rect cropRegion(xMin, yMin, xMax - xMin, yMax - yMin);
-    maskedImg = img(cropRegion);
+    Mat maskedImg = img(cropRegion);
 
-    Mat imgCanny;
-    std::vector<Vec4i> lines, longestLines;
+    // Detect the banner border lines using Canny Edge Detection and Hough Transform for line detection
+    Mat imgCanny = cannyEdgeDetection(maskedImg);
+    std::vector<Vec4i> lines = houghLines(imgCanny);
+    std::vector<Vec4i> longestLines = longestTwo(lines);
 
-    imgCanny = cannyEdgeDetection(maskedImg);
-    lines = houghLines(imgCanny);
-    longestLines = longestTwo(lines);
-
-    Mat imgBGR;
-    cvtColor(imgCanny, imgBGR, COLOR_GRAY2BGR);
-    line(imgBGR, Point(longestLines[0][0], longestLines[0][1]), 
-        Point(longestLines[0][2], longestLines[0][3]), 
-        Scalar(255, 0, 0), 3, LINE_AA);
-    line(imgBGR, Point(longestLines[1][0], longestLines[1][1]), 
-        Point(longestLines[1][2], longestLines[1][3]), 
-        Scalar(255, 0, 0), 3, LINE_AA);
-
+    // get the corner points of the banner, in the coordinate system of the uncropped image
     std::vector<Point> pts = extendLines(longestLines, imgCanny);
-    pts = uncrop(pts, xMin, yMin);
+    uncrop(pts, xMin, yMin);
 
+    // compute the ratio "height:with" for the banner and template
     int bannerHeight = ((pts[2].y - pts[0].y) + (pts[3].y - pts[1].y)) / 2;
     int bannerWidth = ((pts[1].x - pts[0].x) + (pts[3].x - pts[2].x)) / 2;
-
     cout << "banner height=" << bannerHeight << " banner width=" << bannerWidth << endl;
 
-    double imgHeightToWidth = (double)bannerHeight / (double)bannerWidth;
+    double bannerHeightToWidth = (double)bannerHeight / (double)bannerWidth;
     double templateHeightToWidth = double(templ.rows) / double(templ.cols);
 
+    // crop the template to the same "height:width"-ratio as the banner
     Rect crop;
     crop.x = 0;
     crop.y = 0;
-    
-    if (imgHeightToWidth > templateHeightToWidth)
-    {
+    if (bannerHeightToWidth > templateHeightToWidth){
         crop.height = templ.rows;
-        crop.width = templ.rows / imgHeightToWidth;
+        crop.width = templ.rows / bannerHeightToWidth;
     }
-    else
-    {
-        crop.height = templ.cols * imgHeightToWidth;
+    else{
+        crop.height = templ.cols * bannerHeightToWidth;
         crop.width = templ.cols;
     }
-
     Mat templCrop = templ(crop);
 
-    std::vector<Point> templPts {
+    // define the corners of the template
+    std::vector<Point2d> templPts {
         Point(0, 0), 
         Point(templCrop.cols, 0), 
         Point(0, templCrop.rows),
         Point(templCrop.cols, templCrop.rows)};
 
-    std::vector<Point2f> pts2f;
+    // cast points to Point2d
+    std::vector<Point2f> pts2d;
     for (int i = 0; i < pts.size(); i++){
-        pts2f.push_back((Point2d)pts[i]);
+        pts2d.push_back((Point2d)pts[i]);
     }
-    std::vector<Point2f> templPts2f;
+    std::vector<Point2f> templPts2d;
     for (int i = 0; i < templPts.size(); i++){
-        templPts2f.push_back((Point2d)templPts[i]);
+        templPts2d.push_back((Point2d)templPts[i]);
     }
 
-    // replace banner advertisement with template
-    Mat H = getPerspectiveTransform(templPts2f, pts2f);
+    // compute the homography and replace the banner with the template
+    Mat H = getPerspectiveTransform(templPts2d, pts2d);
     cv::Mat composite;
     img.copyTo(composite);
     warpPerspective(templCrop, composite, H, composite.size(), cv::INTER_CUBIC,cv::BORDER_TRANSPARENT);
@@ -446,12 +424,30 @@ int main(int argc, char *argv[])
     imshow("warped template", composite);
     waitKey(0);
 
-    String outPath = argv[1];
+    // store the result to the same image path, just adding "_result" to the file name
+    String outPath = imgPath;
     int length = outPath.length();
     outPath.erase(length - 5, 5);
     outPath += "_result.jpeg";
 
     imwrite(outPath, composite);
+}
+
+int main(int argc, char *argv[])
+{
+    String imgPath = argv[1]; 
+    String templPath = argv[2];
+
+    // Read image from file
+    Mat img = imread(imgPath);
+    // if fail to read the image
+    if (img.empty())
+    {
+        cout << "Error loading the image" << endl;
+        return -1;
+    }
+
+    replaceAdBanner(img, imgPath, templPath);
 
     return 0;
 }
