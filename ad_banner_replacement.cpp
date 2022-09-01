@@ -27,6 +27,12 @@ struct Comparator
                 }
 };
 
+/**
+ * Load the template from its path.
+ *
+ * @param templatePath The path to the template file.
+ * @return The template.
+ */
 Mat getTemplate(String templatePath)
 {
     // Read template from file
@@ -40,6 +46,12 @@ Mat getTemplate(String templatePath)
     return templ;
 }
 
+/**
+ * Finds the largest connected component of a mask.
+ *
+ * @param mask The mask with at least one connected component.
+ * @return The mask with only its largest connected component.
+ */
 Mat biggestAreaMask(Mat mask)
 {   
     Mat labels, stats, centroids;
@@ -56,6 +68,12 @@ Mat biggestAreaMask(Mat mask)
     return mask;
 }
 
+/**
+ * Find the pitch area within an image and return a mask for it.
+ *
+ * @param img The image containing a football pitch.
+ * @return The mask of the pitch.
+ */
 Mat pitchMask(Mat img)
 {
     Mat imgHSV, mask;
@@ -76,7 +94,14 @@ Mat pitchMask(Mat img)
     return mask;
 }
 
-std::vector<Point> findCorners(Mat pMaskPadded)
+
+/**
+ * Finds the corners of the polygonial mask of the pitch.
+ *
+ * @param pMaskPadded The padded mask of the pitch.
+ * @return A vector of the 4 pitch corners in order top left, top right, bottom right, bottom left.
+ */
+std::vector<Point> findPitchCorners(Mat pMaskPadded)
 {
     std::vector<Point> points;
     goodFeaturesToTrack(pMaskPadded, points, 100, 0.01, 20);
@@ -107,35 +132,48 @@ std::vector<Point> findCorners(Mat pMaskPadded)
     return corners;
 }
 
-Mat outLimitBannerMask(Mat innerLimitMask)
+
+/**
+ * Computes the mask for the banner surrounding a pitch.
+ *
+ * @param pitchMask The mask of the pitch.
+ * @return The mask of the banner.
+ */
+Mat getBannerMask(Mat pitchMask)
 {   
-    Mat outerLimitMask = Mat::zeros(innerLimitMask.rows, innerLimitMask.cols, CV_64FC1);
+    int heightTolerance = (int)pitchMask.rows * 0.025;
+    int height = (int)pitchMask.rows * 0.09;
+    int widthTolerance = (int)pitchMask.cols * 0.005;
+    int width = (int)pitchMask.cols * 0.04;
 
-    int heightTolerance = (int)innerLimitMask.rows * 0.025;
-    int height = (int)innerLimitMask.rows * 0.09;
-    int widthTolerance = (int)innerLimitMask.cols * 0.005;
-    int width = (int)innerLimitMask.cols * 0.04;
+    Mat bannerMask = Mat::zeros(pitchMask.rows, pitchMask.cols, CV_64FC1);
 
-    for (int row = 0; row < innerLimitMask.rows; row++){
-        for (int col = 0; col < innerLimitMask.cols; col++){
+    for (int row = 0; row < pitchMask.rows; row++){
+        for (int col = 0; col < pitchMask.cols; col++){
 
             // Introduce height tolerance to mask
             if (row >= heightTolerance 
-            && innerLimitMask.at<double>(row, col) == 1 
-            && innerLimitMask.at<double>(row - heightTolerance, col) == 0) {
-                outerLimitMask.at<double>(row, col) = 1;
+            && pitchMask.at<double>(row, col) == 1 
+            && pitchMask.at<double>(row - heightTolerance, col) == 0) {
+                bannerMask.at<double>(row, col) = 1;
             }
 
             // Introduce outer limit to mask
-            else if (row < innerLimitMask.rows - height && innerLimitMask.at<double>(row, col) == 0 && innerLimitMask.at<double>(row + height, col) == 1) {
-                outerLimitMask.at<double>(row, col) = 1;
+            else if (row < pitchMask.rows - height && pitchMask.at<double>(row, col) == 0 && pitchMask.at<double>(row + height, col) == 1) {
+                bannerMask.at<double>(row, col) = 1;
             }
         }
     }
 
-    return outerLimitMask;
+    return bannerMask;
 }
 
+/**
+ * Computes the mask of the banner in the image.
+ *
+ * @param img The image containing the banner.
+ * @return The mask of the banner.
+ */
 Mat bannerMask(Mat img)
 {   
     // detect the pitch on the image.
@@ -147,22 +185,36 @@ Mat bannerMask(Mat img)
     copyMakeBorder(pMask, pMaskPadded, padding, padding, padding, padding, BORDER_CONSTANT);
 
     // find the corners of the pitch
-    std::vector<Point> corners = findCorners(pMaskPadded);
+    std::vector<Point> corners = findPitchCorners(pMaskPadded);
 
     // create a mask spanning the 4 pitch corners and unpad
-    Mat maskPadded = Mat::zeros(pMaskPadded.rows, pMaskPadded.cols, CV_64FC1);
-    fillConvexPoly(maskPadded, corners, Scalar(1));
-    Mat maskUnpadded = cv::Mat(maskPadded, cv::Rect(padding, padding, maskPadded.cols - 2 * padding, 
-                            maskPadded.rows - 2 * padding));
+    Mat pMaskPolyPadded = Mat::zeros(pMaskPadded.rows, pMaskPadded.cols, CV_64FC1);
+    fillConvexPoly(pMaskPolyPadded, corners, Scalar(1));
+    Mat pMaskPolyUnpadded = cv::Mat(pMaskPolyPadded, 
+                                cv::Rect(
+                                    padding, 
+                                    padding,
+                                    pMaskPolyPadded.cols - 2 * padding, 
+                                    pMaskPolyPadded.rows - 2 * padding
+                                    ));
 
     // create a mask for the banners surrounding the pitch
-    Mat mask = outLimitBannerMask(maskUnpadded);
+    Mat mask = getBannerMask(pMaskPolyUnpadded);
     mask.convertTo(mask, CV_8U);
     mask = biggestAreaMask(mask);
 
     return mask;
 }
 
+/**
+ * Finds the minimum and maximum x and y coordinates of a masked area.
+ *
+ * @param mask The mask.
+ * @param xMin The minimum x coordinate of the masked area.
+ * @param xMax The maximum x coordinate of the masked area.
+ * @param yMin The minimum y coordinate of the masked area.
+ * @param xMax The maximum y coordinate of the masked area.
+ */
 void getMaskCorners(Mat mask, int &xMin, int &xMax, int &yMin, int &yMax){
     xMin = mask.cols - 1;
     xMax = 0;
@@ -188,6 +240,15 @@ void getMaskCorners(Mat mask, int &xMin, int &xMax, int &yMin, int &yMax){
     }
 }
 
+/**
+ * Performs Canny Edge Detection on an image.
+ *
+ * @param img The image.
+ * @param lowThreshold The low threshold for Canny Edge Detection, default = 100.
+ * @param lowThreshold The high threshold for Canny Edge Detection, default = 200.
+ * @param lowThreshold The kernel size for Canny Edge Detection, default = 3.
+ * @return The image with Canny Edge Detection performed on it.
+ */
 Mat cannyEdgeDetection(
     Mat img, 
     const int lowThreshold = 100,
@@ -207,6 +268,12 @@ Mat cannyEdgeDetection(
     return imgCannyG33;
 }
 
+/**
+ * Finds lines in an image using the probabilistic Hough Transform.
+ *
+ * @param img The image.
+ * @return The detected lines.
+ */
 std::vector<Vec4i> houghLines(Mat img)
 {
     Mat imgBGR;
@@ -239,6 +306,14 @@ std::vector<Vec4i> houghLines(Mat img)
     return houghLines;
 }
 
+/**
+ * Compares a value with a set of values and some error tolerance.
+ *
+ * @param val The value to compare.
+ * @param compVals A set of values to compare the input value with.
+ * @param tolerance The tolerance for error when comparing values.
+ * @return Whether the value is close enough to any of the comparison values or not.
+ */
 bool compareWithRange(double val, std::set<double> compVals, double tolerance)
 {
     for (double compVal : compVals){
@@ -249,7 +324,15 @@ bool compareWithRange(double val, std::set<double> compVals, double tolerance)
     return false;
 }
 
-std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol=5.0, double cTol=10)
+/**
+ * Takes the longest two line segments which have a similar orientation.
+ *
+ * @param lines The segments of lines to consider.
+ * @param angleTol The tolerance on angle difference when checking for line similarity.
+ * @param cTol The tolerance on offset difference along the y-axis when checking for line similarity.
+ * @return The longest two line segments that are similar.
+ */
+std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, double angleTol=5.0, double cTol=10)
 {
     std::vector<std::tuple<double, Vec4i, double, double>> infoTuples;
     for (size_t i = 0; i < lines.size(); i++) {
@@ -274,7 +357,7 @@ std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol
     infoQueue.pop();
 
     int count = 1;
-    while (count < X && !infoQueue.empty()) {
+    while (count < 2 && !infoQueue.empty()) {
         std::tuple<double, Vec4i, double, double> candidate = infoQueue.top();
         Vec4i candidateLine = std::get<1>(candidate);
         double candidateAngle = std::get<2>(candidate);
@@ -295,11 +378,25 @@ std::vector<Vec4i> longestTwo(std::vector<Vec4i> lines, int X=2, double angleTol
     return longestTwoLines;
 }
 
+/**
+ * Comparison function to sort a vector of lines with nondecreasing y1-values.
+ *
+ * @param first The first line of the comparison.
+ * @param second The second line of the comparison.
+ * @return Whether the first line segment has a smaller y1-value than the second line segment.
+ */
 bool CustomVectorCompare(Vec4i first, const Vec4i second)
 {      
     return first[1] < second[1];
 }
 
+/**
+ * Extend line fragments to the vertical image borders.
+ *
+ * @param lines The line fragments to extend.
+ * @param img The image.
+ * @return The lines where each line reaches from the left image border to the right one.
+ */
 std::vector<Point> extendLines(std::vector<Vec4i> lines, Mat img)
 {   
     // sort lines in increasing y-coordinate to ensure top left & right corners are added first;
@@ -341,16 +438,30 @@ std::vector<Point> extendLines(std::vector<Vec4i> lines, Mat img)
     return pts;
 }
 
-void uncrop(std::vector<Point> &pts, int xMin, int yMin)
+/**
+ * Shift points from the coordinate system of a cropped image to the coordinate system of an uncropped image.
+ *
+ * @param pts The points to be shifted.
+ * @param xShift The shift along the x-axis.
+ * @param yShift The shift along the y-axis.
+ */
+void uncrop(std::vector<Point> &pts, int xShift, int yShift)
 {
     std::vector<Point> uncroppedPts;
     for (Point pt : pts){
-        Point uncroppedPt = pt + Point(xMin, yMin);
+        Point uncroppedPt = pt + Point(xShift, yShift);
         uncroppedPts.push_back(uncroppedPt);
     }
     pts = uncroppedPts;
 }
 
+/**
+ * Detects advertisement banners and replaces them with a template.
+ *
+ * @param img The image containins the banners.
+ * @param imgPath The path to the input image.
+ * @param templPath The path to the templage image.
+ */
 void replaceAdBanner(Mat img, String imgPath, String templPath)
 {
     namedWindow("Original Img", WINDOW_AUTOSIZE);
