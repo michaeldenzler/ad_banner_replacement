@@ -27,6 +27,13 @@ struct Comparator
                 }
 };
 
+/**
+ * Checks wheter a string has a specific ending.
+ *
+ * @param fullString The string to check.
+ * @param ending The string ending to check for.
+ * @return True if the string ends on the specific ending, false otherwise.
+ */
 bool hasEnding (String fullString, String ending) {
     if (fullString.length() >= ending.length()) {
         return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
@@ -467,7 +474,8 @@ void uncrop(std::vector<Point> &pts, int xShift, int yShift)
  * Detects advertisement banners and replaces them with a template.
  *
  * @param img The image containins the banners.
- * @param templPath The path to the templage immage.
+ * @param templPath The path to the templage image.
+ * @return The image with the replaced ad banners.
  */
 Mat replaceAdBanner(Mat img, String templPath)
 {
@@ -539,6 +547,13 @@ Mat replaceAdBanner(Mat img, String templPath)
     return composite;
 }
 
+/**
+ * Creates the path string of the output file using the same directory as the input file's.
+ *
+ * @param filePath The path of the input file.
+ * @param templPath The format suffix to use for the output file.
+ * @return The output path.
+ */
 String createOutPath(String filePath, String suffix)
 {
     // store the result to the same image path, just adding "_result" to the file name
@@ -549,6 +564,13 @@ String createOutPath(String filePath, String suffix)
     return outPath;
 }
 
+/**
+ * Performs ad banner replacement on an image file.
+ *
+ * @param imgPath The path of the input image file.
+ * @param templPath The specific ending the output file will be marked with.
+ * @param suffix The format suffix to use for the output file, default: .jpeg.
+ */
 void processImage(String imgPath, String templPath, String suffix=".jpeg")
 {
     // Read image from file
@@ -565,6 +587,13 @@ void processImage(String imgPath, String templPath, String suffix=".jpeg")
     imwrite(outPath, processedImg);
 }
 
+/**
+ * Performs ad banner replacement on a video file.
+ *
+ * @param videoPath The path of the input video file.
+ * @param templPath The specific ending the output file will be marked with.
+ * @param suffix The format suffix to use for the output file, default: .mov.
+ */
 void processVideo(String videoPath, String templPath, String suffix=".mov")
 {
     VideoCapture cap(videoPath);
