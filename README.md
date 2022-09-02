@@ -15,9 +15,8 @@ The output will then be saved to the same directory as the input image/video, in
 
 ## Results on images
 Example 1, input image:
-![banner1](https://user-images.githubusercontent.com/43403875/188171887-8a6325b9-31e3-40d7-b5c6-5c241ecbbaec.jpeg)
+![banner1](https://user-images.githubusercontent.com/43403875/188171887-8a6325b9-31e3-40d7-b5c6-5c241ecbbaec.jpeg) ![banner1_result](https://user-images.githubusercontent.com/43403875/188171905-fb11870c-810d-4ba0-8ab8-bdc461de159f.jpeg)
 Result after the advertisement has been replaced with kinder chocolate bars:
-![banner1_result](https://user-images.githubusercontent.com/43403875/188171905-fb11870c-810d-4ba0-8ab8-bdc461de159f.jpeg)
 
 Example 2, input image:
 ![banner2](https://user-images.githubusercontent.com/43403875/188172130-8fc854b8-4c29-452e-83a0-de496170512e.jpeg)
