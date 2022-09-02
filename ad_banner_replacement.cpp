@@ -27,6 +27,14 @@ struct Comparator
                 }
 };
 
+bool hasEnding (String fullString, String ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
 /**
  * Load the template from its path.
  *
@@ -459,18 +467,20 @@ void uncrop(std::vector<Point> &pts, int xShift, int yShift)
  * Detects advertisement banners and replaces them with a template.
  *
  * @param img The image containins the banners.
- * @param imgPath The path to the input image.
- * @param templPath The path to the templage image.
+ * @param templPath The path to the templage immage.
  */
-void replaceAdBanner(Mat img, String imgPath, String templPath)
+Mat replaceAdBanner(Mat img, String templPath)
 {
-    namedWindow("Original Img", WINDOW_AUTOSIZE);
-    imshow("Original Img", img);
-    waitKey(0);
+    // namedWindow("Original Img", WINDOW_AUTOSIZE);
+    // imshow("Original Img", img);
+    // waitKey(0);
 
     Mat templ = getTemplate(templPath);
 
     Mat bMask = bannerMask(img);
+    // namedWindow("Banner Mask", WINDOW_AUTOSIZE);
+    // imshow("Banner Mask", bMask);
+    // waitKey(0);
 
     // Crop image to mask area
     int xMin, xMax, yMin, yMax;
@@ -480,6 +490,9 @@ void replaceAdBanner(Mat img, String imgPath, String templPath)
 
     // Detect the banner border lines using Canny Edge Detection and Hough Transform for line detection
     Mat imgCanny = cannyEdgeDetection(maskedImg);
+    // namedWindow("Canny Img", WINDOW_AUTOSIZE);
+    // imshow("Canny Img", imgCanny);
+    // waitKey(0);
     std::vector<Vec4i> lines = houghLines(imgCanny);
     std::vector<Vec4i> longestLines = longestTwo(lines);
 
@@ -528,37 +541,80 @@ void replaceAdBanner(Mat img, String imgPath, String templPath)
 
     // compute the homography and replace the banner with the template
     Mat H = getPerspectiveTransform(templPts2d, pts2d);
-    cv::Mat composite;
+    Mat composite;
     img.copyTo(composite);
     warpPerspective(templCrop, composite, H, composite.size(), cv::INTER_CUBIC,cv::BORDER_TRANSPARENT);
 
-    imshow("warped template", composite);
-    waitKey(0);
+    // imshow("warped template", composite);
+    // waitKey(0);
 
-    // store the result to the same image path, just adding "_result" to the file name
-    String outPath = imgPath;
-    int length = outPath.length();
-    outPath.erase(length - 5, 5);
-    outPath += "_result.jpeg";
-
-    imwrite(outPath, composite);
+    return composite;
 }
 
-int main(int argc, char *argv[])
+String createOutPath(String filePath, String suffix)
 {
-    String imgPath = argv[1]; 
-    String templPath = argv[2];
+    // store the result to the same image path, just adding "_result" to the file name
+    String outPath = filePath;
+    int length = outPath.length();
+    outPath.erase(length - suffix.length(), 5);
+    outPath += "_result" + suffix;
+    return outPath;
+}
 
+void processImage(String imgPath, String templPath, String suffix=".jpeg")
+{
     // Read image from file
     Mat img = imread(imgPath);
     // if fail to read the image
     if (img.empty())
     {
         cout << "Error loading the image" << endl;
-        return -1;
     }
 
-    replaceAdBanner(img, imgPath, templPath);
+    Mat processedImg = replaceAdBanner(img, templPath);
+
+    String outPath = createOutPath(imgPath, suffix);
+    imwrite(outPath, processedImg);
+}
+
+void processVideo(String videoPath, String templPath, String suffix=".mov")
+{
+    VideoCapture cap(videoPath);
+    if(!cap.isOpened()){
+        throw "Error when reading steam_avi";
+    }
+
+    double fps = cap.get(CAP_PROP_FPS);
+    Size frameSize;
+    frameSize.height = cap.get(CAP_PROP_FRAME_HEIGHT);
+    frameSize.width = cap.get(CAP_PROP_FRAME_WIDTH);
+
+    String outPath = createOutPath(videoPath, suffix);
+    VideoWriter vieoWriter(outPath,VideoWriter::fourcc('M','P','4','V'), fps, frameSize, 1);
+
+    Mat frame;
+    for( ; ; )
+    {
+        cap >> frame;
+        if(frame.empty())
+            break;
+        Mat processedFrame = replaceAdBanner(frame, templPath);
+        vieoWriter.write(processedFrame);
+    }
+    vieoWriter.release();
+}
+
+int main(int argc, char *argv[])
+{
+    String filePath = argv[1]; 
+    String templPath = argv[2];
+
+    if (hasEnding(filePath, ".jpeg") || hasEnding(filePath, ".jpg")){
+        processImage(filePath, templPath);
+    }
+    else if (hasEnding(filePath, ".mov") || hasEnding(filePath, ".mp4")){
+       processVideo(filePath, templPath);
+    }
 
     return 0;
 }
