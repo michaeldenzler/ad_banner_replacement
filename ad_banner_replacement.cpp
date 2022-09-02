@@ -471,16 +471,10 @@ void uncrop(std::vector<Point> &pts, int xShift, int yShift)
  */
 Mat replaceAdBanner(Mat img, String templPath)
 {
-    // namedWindow("Original Img", WINDOW_AUTOSIZE);
-    // imshow("Original Img", img);
-    // waitKey(0);
 
     Mat templ = getTemplate(templPath);
 
     Mat bMask = bannerMask(img);
-    // namedWindow("Banner Mask", WINDOW_AUTOSIZE);
-    // imshow("Banner Mask", bMask);
-    // waitKey(0);
 
     // Crop image to mask area
     int xMin, xMax, yMin, yMax;
@@ -490,9 +484,6 @@ Mat replaceAdBanner(Mat img, String templPath)
 
     // Detect the banner border lines using Canny Edge Detection and Hough Transform for line detection
     Mat imgCanny = cannyEdgeDetection(maskedImg);
-    // namedWindow("Canny Img", WINDOW_AUTOSIZE);
-    // imshow("Canny Img", imgCanny);
-    // waitKey(0);
     std::vector<Vec4i> lines = houghLines(imgCanny);
     std::vector<Vec4i> longestLines = longestTwo(lines);
 
@@ -544,9 +535,6 @@ Mat replaceAdBanner(Mat img, String templPath)
     Mat composite;
     img.copyTo(composite);
     warpPerspective(templCrop, composite, H, composite.size(), cv::INTER_CUBIC,cv::BORDER_TRANSPARENT);
-
-    // imshow("warped template", composite);
-    // waitKey(0);
 
     return composite;
 }
