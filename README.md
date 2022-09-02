@@ -14,14 +14,13 @@ The code can be executed from the build directory with the folling dummy command
 The output will then be saved to the same directory as the input image/video, in .jpeg or .mov format respectively.
 
 ## Results on images
-Example 1, input image:           | Result after the advertisement has been replaced with kinder chocolate bars:
+Example 1, input image           | Result after the ad replacement with kinder chocolate bars
 :-------------------------:|:-------------------------:
 ![banner1](https://user-images.githubusercontent.com/43403875/188171887-8a6325b9-31e3-40d7-b5c6-5c241ecbbaec.jpeg)  |  ![banner1_result](https://user-images.githubusercontent.com/43403875/188171905-fb11870c-810d-4ba0-8ab8-bdc461de159f.jpeg)
 
-Example 2, input image:
-![banner2](https://user-images.githubusercontent.com/43403875/188172130-8fc854b8-4c29-452e-83a0-de496170512e.jpeg)
-Result after the advertisement has been replaced with lego bricks:
-![banner2_result](https://user-images.githubusercontent.com/43403875/188172138-6308c74c-b70c-4345-a782-23f0f5d34cba.jpeg)
+Example 2, input image           | Result after the ad has been replaced with lego bricks
+:-------------------------:|:-------------------------:
+![banner2](https://user-images.githubusercontent.com/43403875/188172130-8fc854b8-4c29-452e-83a0-de496170512e.jpeg)  |  ![banner2_result](https://user-images.githubusercontent.com/43403875/188172138-6308c74c-b70c-4345-a782-23f0f5d34cba.jpeg)
 
 ## Reslts on videos:
 Result after the the algorithm has been applied on the entire video:
