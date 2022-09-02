@@ -8,7 +8,7 @@ This projects shows how to replace advertisement banners with any other template
 
 The code can be executed from the build directory with the folling dummy command:
 ```
-./ad-banner-replacement <<your_path_to_input_image/video>> <<your_path_to_ad_template>>
+./ad-banner-replacement <<your_path_to_input_file>> <<your_path_to_ad_template>>
 ```
 
 The output will then be saved to the same directory as the input image/video, in .jpeg or .mov format respectively.
