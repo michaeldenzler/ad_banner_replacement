@@ -3,8 +3,8 @@
 This projects shows how to replace advertisement banners with any other template advertisement using Computer Vision and OpenCV in C++.
 
 ## Algorithm steps
-Step 1: Detect the advertisement banners in the image.
-Step 2: Replace the advertisement banner with the template advertisement.
+1. Detect the advertisement banners in the image.
+2. Replace the advertisement banner with the template advertisement.
 
 The code can be executed from the build directory with the folling dummy command:
 ```
