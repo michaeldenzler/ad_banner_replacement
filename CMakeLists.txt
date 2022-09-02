@@ -25,7 +25,7 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # specify the executable target to be built
-add_executable(ad-banner-replacement ad_banner_replacement.cpp)
+add_executable(ad-banner-replacement code/ad_banner_replacement.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(ad-banner-replacement ${OpenCV_LIBS} )
