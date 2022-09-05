@@ -13,7 +13,7 @@ set(OpenCV_DIR /Users/michaeldenzler/opencv/install/lib/cmake/opencv4)
 
 # Tell compiler to use C++ 14 features which is needed because
 # Clang version is often behind in the XCode installation
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # configure the necessary common CMake environment variables
 # needed to include and link the OpenCV program into this
@@ -25,8 +25,10 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # specify the executable target to be built
-add_executable(ad-banner-replacement code/ad_banner_replacement.cpp)
+add_executable(ad-banner-replacement ad_banner_replacement.cpp src/utils.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(ad-banner-replacement ${OpenCV_LIBS} )
 target_link_libraries (ad-banner-replacement Eigen3::Eigen)
+
+target_include_directories(ad-banner-replacement PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/incude)
